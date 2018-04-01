@@ -3,7 +3,8 @@
 #{% get_recent_articles %} 的语法在模板中调用这个函数，
 # 必须按照 Django 的规定注册这个函数为模板标签，方法如下：#
 from django import template
-from ..models import Article, Category
+from ..models import Article, Category, Tag
+from django.db.models.aggregates import Count
 
 
 register = template.Library()
@@ -36,7 +37,25 @@ def archives():
 #分类模板标签
 @register.simple_tag
 def get_categories():
-    return Category.objects.all()
+    # Count 计算分类下的文章数，其接受的参数为需要计数的模型的名称
+    return Category.objects.annotate(num_articles=Count('article')).filter(num_articles__gt=0) #gt小于号
+
+
+@register.simple_tag
+def get_tags():
+    # Count 计算分类下的文章数，其接受的参数为需要计数的模型的名称
+    return Tag.objects.annotate(num_articles=Count('article')).filter(num_articles__gt=0) #gt小于号
+
+
+# Count 计算分类下的文章数，其接受的参数为需要计数的模型的名称
+# article_list = Tag.objects,annotate(num_articles=Count(Article))
+'''这个 Category.objects.annotate 方法和 Category.objects.all 有点类似，它会返回数据库中全部 Category 的记录，
+但同时它还会做一些额外的事情，在这里我们希望它做的额外事情就是去统计返回的 Category 记录的集合中每条记录下的文章数。
+代码中的 Count 方法为我们做了这个事，它接收一个和 Categoty 相关联的模型参数名（这里是 Post，通过 ForeignKey 关联的），
+然后它便会统计 Category 记录的集合中每条记录下的与之关联的 Post 记录的行数，也就是文章数，最后把这个值保存到 num_posts 属性中。
+此外，我们还对结果集做了一个过滤，使用 filter 方法把 num_posts 的值小于 1 的分类过滤掉。
+因为 num_posts 的值小于 1 表示该分类下没有文章，没有文章的分类我们不希望它在页面中显示。
+关于 filter 函数以及查询表达式（双下划线）在之前已经讲过'''
 
 '''尽管侧边栏有 4 项内容（还有一个标签云），但是这里我们只实现最新文章、归档和分类数据的显示，
 还有一个标签云没有实现。因为标签云的实现稍有一点不同，所以将在接下来的教程中专门介绍。

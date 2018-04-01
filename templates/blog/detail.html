@@ -11,19 +11,27 @@
                                                                       datetime="{{ article.create_time }}">{{ article.create_time }}</time></a></span>
                             <span class="post-author"><a href="#">{{ article.author }}</a></span>
                             <span class="comments-link"><a href="{% url 'comments:article_comment' article.pk %}">{{ article.comment_set.count }} 评论</a></span>
-                            <span class="views-count"><a href="#">588 阅读</a></span>
+                            <span class="views-count"><a href="{{ article.get_absolute_url }}">{{ article.views }}阅读</a></span>
                         </div>
                     </header>
                     <div class="entry-content clearfix">
                         <p>{{ article.context|safe }}</p>
+                    <div class="widget-tag-cloud">
+                        <ul>
+                            标签：
+                            {% for tag in article.tags.all %}
+                            <li>
+                                <a href="{% url 'blog:tag' tag.pk %}">#{{ tag.name }}</a>
+                            </li>
+                            {% endfor %}
+                        </ul>
                     </div>
+
+
+                    </div >
     </article>
     <section class="comment-area" id="comment-area">
     <hr>
-    <!--{ form.name }}、{ form.email }}、{ form.url }} 等将自动渲染成表单控件，例如 <input> 控件。
-    { form.name.errors }}、{ form.email.errors }} 等将渲染表单对应字段的错误（如果有的话），
-    例如用户 email 格式填错了，那么 Django 会检查用户提交的 email 的格式，
-    然后将格式错误信息保存到 errors 中，模板便将错误信息渲染显示。-->
     <h3>发表评论</h3>
     <!--在这传参数时，我遇到个坑，把article的pk写成article_pk了，导致错误-->
         <form action="{% url 'comments:article_comment' article.pk %}" method="post" class="comment-form">
@@ -52,9 +60,7 @@
             </div>
           </div>    <!-- row -->
         </form>
-    <!--在 detail 视图函数我们获取了全部评论数据，并通过 comment_list 传递给了模板。
-    和处理 index 页面的文章列表方式是一样的，
-    我们在模板中通过 { for %} 模板标签来循环显示文章对应的全部评论内容。-->
+    </section>>
     <ul class="comment-list list-unstyled">
         {% for comment in comment_list %}
         <li class="comment-item">
@@ -69,13 +75,9 @@
         {% endfor %}
     </ul>
 {% endblock main %}
-<!--# 我把它添加在
-/templates/blog/index.html
-<!-- 我觉得是少了一句： <p>{ article.context }}</p>
-div class="entry-content clearfix"
-  <p>{ article.context }</p>
-  <p>{ article.excerpt }}</p>
-  <div class="read-more cl-effect-14">
-    <a href="#" class="more-link">继续阅读 <span class="meta-nav">→</span></a>
-  </div>
-</div>-->
+ {% block toc %}
+      <div class="widget widget-content">
+        <h3 class="widget-title">文章目录</h3>
+        {{ article.toc|safe }}
+    </div>
+ {% endblock toc %}

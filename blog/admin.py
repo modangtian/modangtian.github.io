@@ -8,4 +8,3 @@ class ArticleAdmin(admin.ModelAdmin):
 admin.site.register(Article,ArticleAdmin)
 admin.site.register(Category)
 admin.site.register(Tag)
-# Register your models here.
